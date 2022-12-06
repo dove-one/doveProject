@@ -1,1 +1,5 @@
-# dovePoject
+# doveProject
+
+sync 
+- once
+- pool
