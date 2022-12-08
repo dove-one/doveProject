@@ -1,6 +1,8 @@
-# doveProject
+# dove
 
-sync 
+sync
 - once
 - pool
 - waitGroup
+
+channel
