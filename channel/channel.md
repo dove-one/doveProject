@@ -22,8 +22,7 @@ channel基本用法
 思路：难点在于channel里面的元素只能被一个gorotine取出来。要想同一个消息能被多goroutine消费
 · 方案一：每一个消费者订阅的时候，创建一个子channel
 · 方案二：轮询所有的消费者
-![](https://github.com/dove-one/doveProject/main/channel/img.png)
-
+![](/img.png)
 实现一个任务池
 例子：利用channel来实现一个任务池。该任务池运行开发者提交任务，
 并且设定最多多少个goroutine同时运行。
