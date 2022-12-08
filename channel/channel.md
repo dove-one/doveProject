@@ -22,7 +22,8 @@ channel基本用法
 思路：难点在于channel里面的元素只能被一个gorotine取出来。要想同一个消息能被多goroutine消费
 · 方案一：每一个消费者订阅的时候，创建一个子channel
 · 方案二：轮询所有的消费者
-![](/img.png)
+![img.png](img.png)
+
 // TODO 图片待修复
 
 实现一个任务池
