@@ -79,7 +79,11 @@ func (b *Broker2) Subscribe(consume func(s string)) {
 
 func (b *Broker2) Start() {
 	go func() {
-		s := <-b.ch
+		s, ok := <-b.ch
+		// 防止接收不到导致goroutine泄漏
+		if !ok {
+			return
+		}
 		for _, c := range b.consumers {
 			c(s)
 		}
