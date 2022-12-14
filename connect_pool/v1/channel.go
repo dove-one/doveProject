@@ -1,4 +1,4 @@
-package connect_pool
+package v1
 
 import (
 	"errors"

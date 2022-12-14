@@ -1,8 +1,7 @@
-package connect_pool
+package v2
 
 import (
 	"errors"
-	"net"
 )
 
 var (
@@ -14,14 +13,13 @@ var (
 // 一个连接池应该有最大容量。
 // 理想的连接池是线程安全的且易于使用
 type Pool interface {
-	// Get 返回一个新的连接
-	// 关闭连接后会将它放回池中
-	// 当连接池被破坏或者满的时候关闭会被当作一个错误
-	Get() (net.Conn, error)
+	Get() (any, error)
 
-	// Close 关闭了连接池和它所有的连接
-	Close()
+	Put(any) error
 
-	// Len 返回连接池的当前连接数
+	Close(any) error
+
 	Len() int
+
+	Release()
 }
