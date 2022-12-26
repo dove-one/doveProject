@@ -17,4 +17,6 @@ net
 
 cgo
 
+wire
+
 connect_pool 连接池v1
