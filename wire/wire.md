@@ -17,9 +17,12 @@ wire: /Users/xxxx/doveProject/wire/wire.go:12:9: undeclared name: BroadCast
 wire: generate failed
 直接用指令wire成功
 
-
+Wire 有两个基础概念，Provider（构造器）和 Injector（注入器）
 1.Provide 构造器
-
+ Provider 实际上就是生成组件的普通方法，这些方法接收所需依赖作为参数，创建组件并将其返回。
+我们上面例子的 NewEvent 就是 Provider
 
 2.injector 注入器
+ Injector 可以理解为 Providers 的连接器，它用来按依赖顺序调用 Providers 并最终返回构建目标。
+ 我们上面例子的 InitializeEvent 就是 Injector
 ```
