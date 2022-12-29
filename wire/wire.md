@@ -15,6 +15,7 @@ wire: /Users/xxxx/doveProject/wire/wire.go:11:27: undeclared name: NewChannel
 wire: /Users/xxxx/doveProject/wire/wire.go:11:39: undeclared name: NewMessage
 wire: /Users/xxxx/doveProject/wire/wire.go:12:9: undeclared name: BroadCast
 wire: generate failed
+直接用指令wire成功
 
 
 1.Provide 构造器
