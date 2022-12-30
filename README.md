@@ -14,6 +14,7 @@ unsafe
 reflect
 
 net
+- http
 
 cgo
 
