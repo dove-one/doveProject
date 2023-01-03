@@ -4,6 +4,9 @@ import (
 	"context"
 	"log"
 	"net/http"
+	"os"
+	"os/signal"
+	"sync"
 	"time"
 )
 
@@ -65,25 +68,67 @@ func (app *App) StartAndServe() {
 			}
 		}()
 	}
-	// 从这里开始优雅退出监听系统信号，强制退出以及超时强制退出。
-	// 优雅退出的具体步骤在 shutdown 里面实现
-	// 所以你需要在这里恰当的位置，调用 shutdown
+	// 从这里开始开始启动监听系统信号
+	// ch := make(...) 首先创建一个接收系统信号的 channel ch
+	// 定义要监听的目标信号 signals []os.Signal
+	// 调用 signal
+	ch := make(chan os.Signal, 2)
+	signal.Notify(ch, signals...)
+	<-ch
+	println("hello")
+	go func() {
+		select {
+		case <-ch:
+			log.Printf("强制退出")
+			os.Exit(1)
+		case <-time.After(app.shutdownTimeout):
+			log.Printf("超时强制退出")
+			os.Exit(1)
+		}
+	}()
+	app.shutdown()
 }
 
 // shutdown 你要设计这里面的执行步骤。
 func (app *App) shutdown() {
 	log.Println("开始关闭应用，停止接收新请求")
-	// 你需要在这里让所有的 server 拒绝新请求
+	for _, s := range app.servers {
+		// 思考：这里为什么我可以不用并发控制，即不用锁，也不用原子操作
+		s.rejectReq()
+	}
 
 	log.Println("等待正在执行请求完结")
-	// 在这里等待一段时间
+	// 这里可以改造为实时统计正在处理的请求数量，为0 则下一步
+	time.Sleep(app.waitTime)
 
 	log.Println("开始关闭服务器")
-	// 并发关闭服务器，同时要注意协调所有的 server 都关闭之后才能步入下一个阶段
+	var wg sync.WaitGroup
+	wg.Add(len(app.servers))
+	for _, srv := range app.servers {
+		srvCp := srv
+		go func() {
+			if err := srvCp.stop(); err != nil {
+				log.Printf("关闭服务失败%s \n", srvCp.name)
+			}
+			wg.Done()
+		}()
+	}
+
+	wg.Wait()
 
 	log.Println("开始执行自定义回调")
-	// 并发执行回调，要注意协调所有的回调都执行完才会步入下一个阶段
-
+	// 执行回调
+	wg.Add(len(app.cbs))
+	for _, cb := range app.cbs {
+		c := cb
+		go func() {
+			ctx, cancel := context.WithTimeout(context.Background(), app.cbTimeout)
+			c(ctx)
+			cancel()
+			wg.Done()
+		}()
+	}
+	wg.Wait()
 	// 释放资源
 	log.Println("开始释放资源")
 	app.close()
@@ -144,7 +189,12 @@ func (s *Server) rejectReq() {
 	s.mux.reject = true
 }
 
-func (s *Server) stop(ctx context.Context) error {
+func (s *Server) stop1(ctx context.Context) error {
 	log.Printf("服务器%s关闭中", s.name)
 	return s.srv.Shutdown(ctx)
+}
+
+func (s *Server) stop() error {
+	log.Printf("服务器%s关闭中", s.name)
+	return s.srv.Shutdown(context.Background())
 }
